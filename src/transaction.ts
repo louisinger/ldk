@@ -130,15 +130,15 @@ export function buildTx(args: BuildTxArgs): string {
   const coinSelectionResult = coinSelector(
     availableUnspents,
     // a little trick to only select the difference not covered by the change output
-    [{ ...fee, value: Math.abs(diff) }],
+    [{ ...feeBis, value: Math.abs(diff) }],
     changeAddressByAsset
   );
 
   const ins = inputs.concat(coinSelectionResult.selectedUtxos);
   const outs = recipients
     .concat(changeOutputs)
-    .concat(fee)
-    .concat(coinSelectionResult.changeOutputs);
+    .concat(coinSelectionResult.changeOutputs)
+    .concat(feeBis);
 
   return addToTx(psetBase64, ins, outs);
 }

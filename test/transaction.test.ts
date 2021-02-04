@@ -47,7 +47,7 @@ describe('buildTx', () => {
     };
   });
 
-  it('should build a confidential transaction spending USDT', async () => {
+  it('should build a confidential transaction spending USDT (and broadcast it)', async () => {
     // create a tx using wallet
     const tx = (await senderWallet).createTx();
 
@@ -67,6 +67,18 @@ describe('buildTx', () => {
     });
     console.log(psetToUnsignedHex(unsignedTx));
     assert.doesNotThrow(() => Psbt.fromBase64(unsignedTx));
+
+    const blindedBase64 = await sender.blindPset(unsignedTx, [2]);
+    const signedBase64 = await sender.signPset(blindedBase64);
+    const signedPset = decodePset(signedBase64);
+
+    const hex = signedPset
+      .finalizeAllInputs()
+      .extractTransaction()
+      .toHex();
+
+    console.log(hex);
+    await broadcastTx(hex);
   });
 
   it('should build a confidential transaction spending LBTC', async () => {
@@ -107,15 +119,16 @@ describe('buildTx', () => {
       addFee: true,
     });
 
-    const blindedBase64 = await sender.blindPset(unsignedTx, [2]);
-    const signedBase64 = await sender.signPset(blindedBase64);
-    const signedPset = decodePset(signedBase64);
+    console.log(unsignedTx);
+    // const blindedBase64 = await sender.blindPset(unsignedTx, [2]);
+    // const signedBase64 = await sender.signPset(blindedBase64);
+    // const signedPset = decodePset(signedBase64);
 
-    const hex = signedPset
-      .finalizeAllInputs()
-      .extractTransaction()
-      .toHex();
+    // const hex = signedPset
+    //   .finalizeAllInputs()
+    //   .extractTransaction()
+    //   .toHex();
 
-    await broadcastTx(hex);
+    // await broadcastTx(hex);
   });
 });
